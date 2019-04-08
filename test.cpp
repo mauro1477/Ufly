@@ -85,6 +85,6 @@ int main()
   
     cout << "Front item is " << front(queue) << endl;  
     cout << "Rear item is " << rear(queue) << endl;  
-  
+    //
     return 0;  
 }  
