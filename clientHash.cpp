@@ -154,7 +154,7 @@ void getClient(HashTable &clientTable)
       getline(ss, password, ',');
       getline(ss, passengerNum, ',');
       getline(ss, orgin, ',');
-      clientTable.addClient(stoi(IDNumber), name, password, stoi(passengerNum), orgin);
+      clientTable.addClient(stoi(IDNumber), name, password, stoi(passengerNum), orgin);//I think the error is here.
     }
   }
   else
