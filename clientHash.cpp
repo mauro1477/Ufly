@@ -38,30 +38,35 @@ void HashTable::incrementCount(string word)
   searchTable(word)->count++;
 }
 
-void HashTable::addClient(int _IDNumber, string _name, string _password, int _passengerNum, string _orgin)
+void HashTable::addClient(string _IDNumber, string _name, string _password, string _passengerNum, string _orgin)
 {
+  cout<<"ID Number"<<_IDNumber<<endl;
+  int _IDNumber1 = stoi(_IDNumber);
+  int _passengerNum1 = stoi(_passengerNum);
+
+  cout<<"Hello"<<_passengerNum1<<endl;
 
   int hashName = getHash(_name);
-  //int hashWord = getHash(word);
   client* pointTemp = hashTable[hashName];
   if(pointTemp == NULL)
   {
       cout<<"Hello addClient"<<endl;
       hashTable[hashName] = new client;
-      hashTable[hashName]->IDNumber = _IDNumber;
+      hashTable[hashName]->IDNumber = _IDNumber1;
       hashTable[hashName]->name = _name;
       hashTable[hashName]->passWord = _password;
-      hashTable[hashName]->passengerNum = _passengerNum;
+      hashTable[hashName]->passengerNum = _passengerNum1;
       hashTable[hashName]->orgin = _orgin;
       hashTable[hashName]->next = NULL;
   }
   else
   {
+    cout<<"Hello else"<<endl;
       client* temp = new client;
-      temp->IDNumber = _IDNumber;
+      temp->IDNumber = _IDNumber1;
       temp->name = _name;
       temp->passWord = _password;
-      temp->passengerNum = _passengerNum;
+      temp->passengerNum = _passengerNum1;
       temp->orgin = _orgin;
       temp->next = hashTable[hashName];
       hashTable[hashName] = temp;
@@ -141,20 +146,27 @@ int HashTable::getNumItems()
 
 void getClient(HashTable &clientTable)
 {
+  cout<<"Hello getClient"<<endl;
   ifstream myfile("ClientList.csv");
+
   string line, IDNumber, name, password, passengerNum, orgin;
   if(myfile.is_open())
   {
+      cout<<"Hello getClient"<<endl;
     while(getline(myfile, line))
     {
-      stringstream ss;
-      ss<<line;
+      stringstream ss(line);
       getline(ss, IDNumber, ',');
       getline(ss, name, ',');
       getline(ss, password, ',');
       getline(ss, passengerNum, ',');
       getline(ss, orgin, ',');
-      clientTable.addClient(stoi(IDNumber), name, password, stoi(passengerNum), orgin);//I think the error is here.
+      cout<<IDNumber<<endl;
+      cout<<name<<endl;
+      cout<<password<<endl;
+      cout<<passengerNum<<endl;
+      cout<<orgin<<endl;
+      clientTable.addClient(IDNumber, name, password, passengerNum, orgin);
     }
   }
   else
