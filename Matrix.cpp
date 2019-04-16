@@ -45,7 +45,7 @@ void Matrix::put(string city, int adjIndx)
     hashPlaceTable[ hashIndx ];
     
     newnode->next = nullptr;
-    newnode->name = city;
+    newnode->place_name = city;
     newnode->indx = adjIndx;
     
     if ( hashPlaceTable[ hashIndx ] == nullptr )
@@ -62,7 +62,8 @@ void Matrix::put(string city, int adjIndx)
             {
                 curr->next = newnode;
             }
-            curr = curr->next}
+            curr = curr->next;
+        }
     }
 }
 
@@ -76,7 +77,7 @@ int Matrix::findAdjIndx(string city)
     {
         return -1;
     }
-    else if ( trav->name == city )
+    else if ( trav->place_name == city )
     {
         return trav->indx;
     }
@@ -84,7 +85,7 @@ int Matrix::findAdjIndx(string city)
     {
         while ( trav != nullptr )
         {
-            if ( trav->name == city )
+            if ( trav->place_name == city )
             {
                 return trav->indx;
             }
