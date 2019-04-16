@@ -1,28 +1,57 @@
-#pragma once
+#ifndef CLIENT_HASH
+#define CLIENT_HASH
 #include <string>
-#include <vector>
-using std::string;
-
-struct CNode
+using namespace std;
+// struct to store word + count combinations
+struct client//Client
 {
-    int ID;
+    int count;
+    int IDNumber;
     string name;
-    int orig, destin, numPeople;
-    int position; //stores the position in queue, nodes are added to the end and removed from the front
-    CNode *next;
+    string passWord;
+    int passengerNum;
+    string orgin;
+    client* next;
 };
 
-class ClientQueue
-{
-    public:
-        ClientQueue();
-        ~ClientQueue();
-        void enqueue(CNode *client); //onto tail
-        void dequeue(); //remove head
-        CNode *getHead() { return head; }
-        CNode *getTail() { return tail; }
-        
-    private:
-        CNode *head, *tail;
-        vector<CNode> clientList;
+class HashTable {
+  public:
+    HashTable(int hashTableSize);
+    ~HashTable();
+    void addClient(string cityIndex, string name, string password, string passengerNum, string orgin);
+    bool isInTableName(string word);
+    bool isInTablePassWord(string name, string passWord);
+    void incrementCount(string word);
+    int getNumCollisions();
+    int getNumItems();
+    int getTotalNumWords();
+    void getClient(HashTable &clientTable);
+    //void getCities(HashTable &cityIndex);
+    bool loginDisplay();
+
+
+
+  private:
+    /* member functions */
+    unsigned int getHash(string word);
+    client* searchTableName(string word);
+    client* searchTablePassWord(string name, string passWord);
+
+    /* instance variables */
+    client** hashTable;
+    int hashTableSize;
+    int numCollisions;
+    int numItems;
+    // int numCollisionsCity;//HASH TABLE COUNTERS
+    // int numItemsCity;
 };
+
+
+/* size to make your stopwords hash table */
+const int CLIENT_TABLE_SIZE = 50;
+//const int CITY_TABLE_SIZE  = 20;
+//void getClient(HashTable &clientTable);
+
+
+
+#endif
