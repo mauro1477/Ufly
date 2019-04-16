@@ -8,8 +8,8 @@ struct location
 {
     string place_name;
     int indx;
-    places *next;
-}
+    location *next;
+};
 
 class Matrix
 {
@@ -26,7 +26,8 @@ class Matrix
         void displaySpecific(int _origin, int _destination);
         int findAdjIndx(string city);
         void put(string city, int adjIndx);
-        unsigned int getHash(std::string word)
+        unsigned int getHash(std::string word);
+        int find(string city);
         
     private:
         int numPlanes;
@@ -36,7 +37,7 @@ class Matrix
         int size;
         double **adj;
         //hash table below
-        location hashPlaceTable[20];
+        location *hashPlaceTable[20];
         location *head;
         
         const double COST = 7000.00; //$7000 is the avg cost of a private jet that can go across the united states
