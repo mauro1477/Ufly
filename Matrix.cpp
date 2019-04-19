@@ -12,13 +12,15 @@ using namespace std;
 Matrix::Matrix(int n)
 {
     numCities = n;
-    adj = new double* [n];
+    adj = new MatNode** [n];
     for (int i = 0; i < n; i++)
     {
-        adj[i] = new double [n];
+        adj[i] = new MatNode* [n];
         for(int j = 0; j < n; j++)
         {
-            adj[i][j] = 0;
+            MatNode *newnode = new MatNode;
+            *newnode = { "", "", 0.0, 0.0 };
+            adj[i][j] = newnode;
         }
     }
 }
@@ -32,82 +34,163 @@ unsigned int Matrix::getHash(std::string word)
     {
         hashValue=((hashValue<<5)+hashValue) + word[i];
     }
-    hashValue %= HASHTABLESIZE;
-    
+    hashValue %= numCities;
+
     return hashValue;
-}
-
-void Matrix::put(string city, int adjIndx)
-{
-    int hashIndx = getHash(city);
-    
-    location *newnode = new location;
-    hashPlaceTable[ hashIndx ];
-    
-    newnode->next = nullptr;
-    newnode->place_name = city;
-    newnode->indx = adjIndx;
-    
-    if ( hashPlaceTable[ hashIndx ] == nullptr )
-    {
-        head = newnode;
-    }
-    else
-    {
-        location *curr = hashPlaceTable[ hashIndx ];
-        
-        while ( curr != nullptr )
-        {
-            if ( curr->next == nullptr )
-            {
-                curr->next = newnode;
-            }
-            curr = curr->next;
-        }
-    }
-}
-
-int Matrix::findAdjIndx(string city)
-{
-    int hashIndx = getHash(city);
-    
-    location *trav = hashPlaceTable[ hashIndx ];
-    
-    if ( trav == nullptr )
-    {
-        return -1;
-    }
-    else if ( trav->place_name == city )
-    {
-        return trav->indx;
-    }
-    else
-    {
-        while ( trav != nullptr )
-        {
-            if ( trav->place_name == city )
-            {
-                return trav->indx;
-            }
-            trav = trav->next;
-        }
-    }
-    return -1;
 }
 
 //Switching the edge from '0' to '1' between an origin 
 //and destination
-void Matrix::addEdge(int _origin, int _destination, double miles)
-{
-    if (_origin > numCities || _destination > numCities || 
-        _origin < 0 || _destination < 0)
+void Matrix::addEdge(double miles, string _origin, string _destination)
+{   
+    string lower = _origin;
+    int i = 0;
+    while (lower[i])
     {
-        cout << "Incorrect Edge Input" << endl;
+        lower[i] = tolower(lower[i]);
+        i++;
+    }
+    _origin = lower;
+    lower = _destination;
+    i = 0;
+    while (lower[i])
+    {
+        lower[i] = tolower(lower[i]);
+        i++;
+    }
+    _destination = lower;
+
+    int oIndx = getHash(_origin);
+    int dIndx = getHash(_destination);
+    int track = 0;
+    // cout << "inindx " << oIndx << ", ";
+    while (adj[oIndx][dIndx]->orig_Name != "" && track < numCities)
+    {
+        if (dIndx == numCities-1)
+        {
+            dIndx = 0; track++;
+        }
+        else
+        {
+            dIndx++; track++;
+        }  
+        if (adj[oIndx][dIndx]->orig_Name != "" && track == numCities-1)
+        {
+            track = 0;
+
+            if (oIndx == numCities-1)
+            {
+                oIndx=0;
+            }
+            else
+            {
+                oIndx++;
+            }
+        }
+    }
+
+    track = 0;
+
+    while (adj[oIndx][dIndx]->dest_Name != "" && track < numCities)
+    {
+        if (oIndx == numCities-1)
+        {
+            oIndx = 0;
+            track++;
+        }
+        else
+        {
+            oIndx++; track++;
+        }
+    } 
+    if (adj[oIndx][dIndx]->dest_Name == "")
+    {
+        double price = (miles / 483.00) * COST;
+        MatNode *newnode = new MatNode;
+        *newnode = { _origin, _destination, miles, price };
+        adj[oIndx][dIndx] = newnode;
+    }
+}
+
+MatNode *Matrix::findNode(string _origin, string _destination)
+{
+    int oIndx = getHash(_origin);
+    int dIndx = getHash(_destination);
+    int track = 0; string low;
+
+    if (adj[oIndx][dIndx]->orig_Name == "")
+    {
+        return nullptr;
     }
     else
     {
-        adj[_origin-1][_destination-1] = (miles / 483.00) * COST;
+        do
+        {
+            low = adj[oIndx][dIndx]->dest_Name;
+            int i = 0;
+            while(low[i])
+            {
+                low[i] = tolower(low[i]);
+                i++;
+            }
+            if (low != _destination)
+            {
+                if (dIndx == numCities-1)
+                {
+                    dIndx = 0; track++;
+                }
+                else
+                {
+                    dIndx++; track++;
+                }
+
+                if (adj[oIndx][dIndx]->orig_Name != "" && track == numCities-1)
+                {
+                    track = 0;
+
+                    if (oIndx == numCities-1)
+                    {
+                        oIndx=0;
+                    }
+                    else
+                    {
+                        oIndx++;
+                    }
+                }
+            }
+            else
+            {
+                track = 0;
+                break;
+            }
+            
+
+        } while (track < numCities);
+
+        do
+        {
+            low = adj[oIndx][dIndx]->orig_Name;
+            int i = 0;
+            while(low[i])
+            {
+                low[i] = tolower(low[i]);
+                i++;
+            }
+            if (low == _origin)
+            {
+                return adj[oIndx][dIndx];
+            }
+            else if (oIndx == numCities-1)
+            {
+                oIndx = 0; track++;
+            }
+            else
+            {
+                oIndx++; track++;
+            }
+        } while (track < numCities);
     }
+    return nullptr;
 }
 
 //Helper to find distance between two cities by lon/lat
@@ -167,13 +250,11 @@ void Matrix::inMatrix(string fileName)
                 lon2, minlon1, minlat1, 
                 minlon2, minlat2, origin, 
                 state1, destination, state2;
-        
+        int count = 0;
         while (getline(inFile, origin, ','))
         {
-            
             inFile>>state1>>lat1
             >>minlat1>>lon1>>minlon1;
-            
             pos1++;
             // pos2 = pos1; //If the graph is symmetric
             pos2 = 0;
@@ -188,21 +269,10 @@ void Matrix::inMatrix(string fileName)
                                     stod(lat2)+(stod(minlat2)/60.0),
                                     stod(lon2)+(stod(minlon2)/60.0));
 
-                // if (origin == "Denver")
-                // {
-                    // cout << origin << ", ";
-                    // cout << lat1 << ", " << minlat1 << ", ";
-                    // cout << lon1 << ", " << minlon1 << ", " << endl;
-                    // cout << destination << ", ^^";
-                    // cout << lat2 << ", " << minlat2 << ", ";
-                    // cout << lon2 << ", " << minlon2 << endl;
-                    // cout << "-- " << pos1 << ", " << pos2 << endl;
-                    // cout << "miles: " << costCalc << endl;
-                    // cout << "maths: " << (costCalc/483) * COST << endl << endl;
-                // }
-
                 pos2++;
-                addEdge(pos1, pos2, costCalc);  
+                count++;
+                addEdge(costCalc, origin, destination);  
+
                 GotoLine(inFile, pos2+1);//gotoline to iterate from 0
             }
             inFile.clear();
@@ -221,77 +291,27 @@ void Matrix::displayAll()
     int i,j;
     for(i = 0;i < numCities;i++)
     {
-        for(j = 0; j < numCities; j++)
+        cout << "i " << i << " ";
+        for(j = i; j < numCities; j++)
         {
-            // if (adj[i][j] != 0)
-                cout<<" $"<<adj[i][j]<<"  ";
+            cout << adj[i][j]->orig_Name << "->" << adj[i][j]->dest_Name;
         }
-        cout<<endl;
+        cout<<endl << endl;
     }
 }
 
-void Matrix::displaySpecific(int _origin, int _destination)
+void Matrix::displaySpecific(string _origin, string _destination)
 {
-    ifstream inFile("testfile.txt");
-    string orig, dest;
+    MatNode *curr = findNode(_origin, _destination);
 
-    if (inFile.is_open())
+    if (curr == nullptr)
     {
-        GotoLine(inFile, _origin);
-        getline(inFile, orig, ',');
-        GotoLine(inFile, _destination);
-        getline(inFile, dest, ',');
+        cout << "City not found in database" << endl;
     }
     else
     {
-        cout << "error file" << endl;
+        cout << "$" << fixed << setprecision(2);
+        cout << curr->price << " for ";
+        cout << _origin << " to " << _destination << endl;
     }
-
-    if (_origin > _destination)
-    {
-        int temp = _origin;
-        _origin = _destination;
-        _destination = temp;
-    }
-
-    cout << "$" << fixed << setprecision(2);
-    cout << adj[_origin-1][_destination-1] << " for ";
-    cout << orig << " to " << dest << endl;
-
-    inFile.close();
-}
-
-int Matrix::find(string city)
-{
-    string line; int count = 1;
-    ifstream inFile("testfile.txt");
-    
-    if (inFile.is_open())
-    {
-        while(getline(inFile, line, ','))
-        {
-            int i = 0;
-            while (line[i])
-            {
-                line[i] = tolower(line[i]);
-                i++;
-            }
-            if (line == city)
-            {
-                inFile.close();
-                return count;
-            }
-            else
-            {
-                count++;
-                getline(inFile, line);
-            }
-        }
-    }
-    else
-    {
-        cout << "error file" << endl;
-    }
-    inFile.close();
-    return -1;
 }
